@@ -1,5 +1,4 @@
 <?php
-die('This is just an example and will not work without proper store credentials.');
 
 /*
  * This script retrieves a list of orders from the store "myStore" and displays various bits of their info.
@@ -26,10 +25,9 @@ if ($list) {
  * To get the order's items, the "fetchItems" method must be used by the specific order object.
  */
 function getAmazonOrders() {
-    require('../includes/classes.php'); //autoload classes, not needed if composer is being used
     try {
-        $amz = new AmazonOrderList("myStore"); //store name matches the array key in the config file
-        $amz->setLimits('Modified', "- 24 hours"); //accepts either specific timestamps or relative times 
+        $amz = new \MeSingh\AmazonMws\AmazonOrderList("myStore"); //store name matches the array key in the config file
+        $amz->setLimits('Modified', "- 24 hours"); //accepts either specific timestamps or relative times
         $amz->setFulfillmentChannelFilter("MFN"); //no Amazon-fulfilled orders
         $amz->setOrderStatusFilter(
             array("Unshipped", "PartiallyShipped", "Canceled", "Unfulfillable")

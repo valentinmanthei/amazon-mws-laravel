@@ -4,7 +4,7 @@ die('This is just an example and will not work without proper store credentials.
 /*
  * This script retrieves a list of active feeds for the store "myStore" and display info on them.
  */
-$list=getAmazonFeedStatus();
+$list = getAmazonFeedStatus();
 if ($list) {
     echo 'Feed Status Report<hr>';
     foreach ($list as $feed) {
@@ -24,9 +24,8 @@ if ($list) {
  * To get this information, the feed's results must be retrieved.
  */
 function getAmazonFeedStatus(){
-    require('../includes/classes.php'); //autoload classes, not needed if composer is being used
     try {
-        $amz=new AmazonFeedList("myStore");
+        $amz=new \MeSingh\AmazonMws\AmazonFeedList("myStore");
         $amz->setTimeLimits('- 24 hours'); //limit time frame for feeds to any updated since the given time
         $amz->setFeedStatuses(array("_SUBMITTED_", "_IN_PROGRESS_", "_DONE_")); //exclude cancelled feeds
         $amz->fetchFeedSubmissions(); //this is what actually sends the request
@@ -43,7 +42,7 @@ function getAmazonFeedStatus(){
  */
 function sendInventoryFeed($feed) {
     try {
-        $amz=new AmazonFeed("myStore"); //store name matches the array key in the config file
+        $amz=new \MeSingh\AmazonMws\AmazonFeed("myStore"); //store name matches the array key in the config file
         $amz->setFeedType("_POST_INVENTORY_AVAILABILITY_DATA_"); //feed types listed in documentation
         $amz->setFeedContent($feed); //can be either XML or CSV data; a file upload method is available as well
         $amz->submitFeed(); //this is what actually sends the request
@@ -59,7 +58,7 @@ function sendInventoryFeed($feed) {
  */
 function getFeedResult($feedId) {
     try {
-        $amz=new AmazonFeedResult("myStore", $feedId); //feed ID can be quickly set by passing it to the constructor
+        $amz=new \MeSingh\AmazonMws\AmazonFeedResult("myStore", $feedId); //feed ID can be quickly set by passing it to the constructor
         $amz->setFeedId($feedId); //otherwise, it must be set this way
         $amz->fetchFeedResult();
         return $amz->getRawFeed();
