@@ -1,4 +1,4 @@
-amazon-mws-laravel
+WIP: Amazon MWS Laravel Package
 ============
 
 A PHP package to connect to Amazon's Merchant Web Services (MWS) in an object-oriented manner, with a focus on intuitive usage.
