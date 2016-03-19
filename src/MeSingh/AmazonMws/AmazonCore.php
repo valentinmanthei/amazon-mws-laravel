@@ -127,10 +127,12 @@ abstract class AmazonCore{
      * from the list to use as a response. See <i>setMock</i> for more information.</p>
      * @param string $config [optional] <p>An alternate config file to set. Used for testing.</p>
      */
-    protected function __construct($config = null, $mock=false, $m = null, $config = null){
+    protected function __construct($mwsconfig = null, $mock=false, $m = null, $config = null){
         $this->setConfig();
-        $this->setStore($config);
+        $this->setStore($mwsconfig);
         $this->setMock($mock,$m);
+
+        $this->mwsconfig = $mwsconfig;
 
         $this->env=__DIR__.'/environment.php';
         $this->options['SignatureVersion'] = 2;
@@ -355,50 +357,29 @@ abstract class AmazonCore{
     //  * @param string $path <p>The path to the config file.</p>
     //  * @throws Exception If the file cannot be found or read.
 
-    public function setConfig(){
-        $AMAZON_SERVICE_URL = Config::get('services.amazon_mws.service_url');
-
-        if (isset($AMAZON_SERVICE_URL)){
-            $this->urlbase = $AMAZON_SERVICE_URL;
-        } else {
-            throw new Exception("Config file does not exist or cannot be read!");
-        }
-    }
-
-    /**
-     * Sets the store values.
-     *
-     * This method sets a number of key values from the config file. These values
-     * include your Merchant ID, Access Key ID, and Secret Key, and are critical
-     * for making requests with Amazon. If the store cannot be found in the
-     * config file, or if any of the key values are missing,
-     * the incident will be logged.
-     * @param string $s <p>The store name to look for.</p>
-     * @throws Exception If the file can't be found.
-     */
-    public function setStore($config)
+    public function setConfig($config = null)
     {
         if( is_null($config))
             $config = Config::get('services.amazon_mws');
 
-        if(array_key_exists('merchant_id', $config)){
-            $this->options['SellerId'] = $config['merchant_id'];
-        } else {
+        if(array_key_exists('seller_id', $config))
+            $this->options['SellerId'] = $config['seller_id'];
+        else
             $this->log("Merchant ID is missing!",'Warning');
-        }
-        if(array_key_exists('access_key', $config)){
+
+        if(array_key_exists('access_key', $config))
             $this->options['AWSAccessKeyId'] = $config['access_key'];
-        } else {
+        else
             $this->log("Access Key ID is missing!",'Warning');
-        }
-        if(!array_key_exists('secret_key', $config)){
+
+        if(!array_key_exists('secret_key', $config))
             $this->log("Secret Key is missing!",'Warning');
-        }
+
         // Overwrite Amazon service url if specified
-        if(array_key_exists('service_url', $config)){
-            $AMAZON_SERVICE_URL = $config['service_url'];
-            $this->urlbase = $AMAZON_SERVICE_URL;
-        }
+        if(array_key_exists('service_url', $config))
+            $this->urlbase = $config['service_url'];
+        else
+            throw new Exception("Service Url not set!");
 
     }
 
@@ -519,11 +500,11 @@ abstract class AmazonCore{
      */
     protected function genQuery(){
 
-        $secretKey = Config::get('services.amazon_mws.secret_key');
+        $secretKey = $this->mwsconfig['secret_key'];
 
         unset($this->options['Signature']);
         $this->options['Timestamp'] = $this->genTime();
-        $this->options['Signature'] = $this->_signParameters($this->options, );
+        $this->options['Signature'] = $this->_signParameters($this->options, $secretKey);
         return $this->_getParametersAsString($this->options);
     }
 
@@ -652,6 +633,7 @@ abstract class AmazonCore{
                 $return['error'] = curl_error($ch);
                 return $return;
         }
+
 
         if (is_numeric(strpos($data, 'HTTP/1.1 100 Continue'))) {
             $data=str_replace('HTTP/1.1 100 Continue', '', $data);
