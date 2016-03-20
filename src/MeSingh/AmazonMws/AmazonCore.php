@@ -128,8 +128,7 @@ abstract class AmazonCore{
      * @param string $config [optional] <p>An alternate config file to set. Used for testing.</p>
      */
     protected function __construct($mwsconfig = null, $mock=false, $m = null, $config = null){
-        $this->setConfig();
-        $this->setStore($mwsconfig);
+        $this->setConfig($mwsconfig);
         $this->setMock($mock,$m);
 
         $this->mwsconfig = $mwsconfig;
@@ -371,9 +370,6 @@ abstract class AmazonCore{
             $this->options['AWSAccessKeyId'] = $config['access_key'];
         else
             $this->log("Access Key ID is missing!",'Warning');
-
-        if(!array_key_exists('secret_key', $config))
-            $this->log("Secret Key is missing!",'Warning');
 
         // Overwrite Amazon service url if specified
         if(array_key_exists('service_url', $config))
@@ -689,7 +685,7 @@ abstract class AmazonCore{
      */
     protected function _urlencode($value) {
         return rawurlencode($value);
-		return str_replace('%7E', '~', rawurlencode($value));
+        return str_replace('%7E', '~', rawurlencode($value));
     }
 
     /**
@@ -737,9 +733,9 @@ abstract class AmazonCore{
         $data .= "\n";
         $uri = array_key_exists('path', $endpoint) ? $endpoint['path'] : null;
         if (!isset ($uri)) {
-        	$uri = "/";
+            $uri = "/";
         }
-		$uriencoded = implode("/", array_map(array($this, "_urlencode"), explode("/", $uri)));
+        $uriencoded = implode("/", array_map(array($this, "_urlencode"), explode("/", $uri)));
         $data .= $uriencoded;
         $data .= "\n";
         uksort($parameters, 'strcmp');
